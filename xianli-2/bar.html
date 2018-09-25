@@ -20,7 +20,6 @@
 <!--<p class="hint"></p>-->
 <!--<input id="click" value="点击选择疾病">-->
 <div id="bar"></div>
-
 <script src="d3.v4.min.js"></script>
 <script>
     !(function() {
@@ -34,7 +33,7 @@
         var color = d3.scaleOrdinal()
             .range(random(33));
 
-        d3.csv("../data/data1.csv", cast, patientMain);
+        d3.csv("../data/data3.csv", cast, patientMain);
 
         function cast(d) {
             Object.keys(d).forEach(function (key) {
@@ -130,8 +129,10 @@
         }
     }());
     function compute(x) {
-        var sum = 0.929096450005921; //计算得到,所有概率之和
+        var sum = 1; //计算得到,所有概率之和
+        //return Math.pow(x, 0.5)/1;
         return x/sum;
+       // return Math.pow((x/sum), 0.5);
     }
 
     function random(n) {
