@@ -19,7 +19,7 @@
 <body>
 <div id="graph"></div>    
     
-<script src="d3.v4.min.js"></script>    
+<script src="xianli-2/d3.v4.min.js"></script>
 <script>
 !(function(){
     "use strict"
@@ -68,10 +68,11 @@
                 return {key:key, value:d.value[key]}
             })
         })
+        console.log(nested);
 
         setSize(nested)
         drawAxis()
-        drawChart(nested)    
+        drawChart(nested)
     }
     
     function setSize(nested) {

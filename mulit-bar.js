@@ -25,8 +25,8 @@ function barChart(){
 }
 
 function drawBars(data){
-    
-
+    console.log(data);
 }
 
-drawBars(json);
+d3.csv('./data/data1.csv', drawBars);
+// drawBars(json);

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>横向barchart展示疾病概率</title>
+    <style>
+        #graph {
+            width: 900px;
+            height: 500px;
+        }
+        .tick line {
+            stroke-dasharray: 2 2 ;
+            stroke: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+<!--<p class="hint"></p>-->
+<!--<input id="click" value="点击选择疾病">-->
+<div id="bar"></div>
+
+<script src="d3.v4.min.js"></script>
+<script>
+    !(function() {
+        "use strict"
+
+        var width, height
+        var svg = d3.select("#graph").append("svg")
+        var axisLayer = svg.append("g").classed("axisLayer", true)
+        var chartLayer = svg.append("g").classed("chartLayer", true)
+
+        var color = d3.scaleOrdinal()
+            .range(random(33));
+
+        d3.csv("../data/data1.csv", cast, patientMain);
+
+        function cast(d) {
+            Object.keys(d).forEach(function (key) {
+                if (!isNaN(+d[key])) d[key] = +d[key]
+            })
+            return d
+        }
+
+        function patientMain(data) {
+            console.log(data);
+            width = 1000;
+            height = 800;
+            var disease = [];
+            var res = d3.nest()
+                .rollup(function (d) {
+                    delete d[0].disease;
+                    return d[0];
+                })
+                .key(function (d) {
+                    return d.disease
+                })
+                .entries(data);
+            var num = res[0].value;
+            var visit = res[1].value;
+            var json = [[], [], [], [], []];
+            var x = 0;
+            for (var key in visit) {
+                if (num.hasOwnProperty(key)) {
+                    if (disease.indexOf(key) == -1) {
+                        disease.push(key);
+                    }
+                    json[visit[key] - 1].push({'key': key, 'value': compute(num[key])});
+                }
+            }
+            json.forEach((d, i) => {
+                for (var j = 0; j < d.length; j++) {
+                    d[j].width = compute(d[j].value) * width;
+                    d[j].x = x;
+                    x += d[j].width;
+                }
+                d.push({'key': 'visit' + i, 'value': -1, 'x': x, 'width': 20, 'color': 'white'});
+                x += 20;
+            })
+            console.log(json);
+
+            drawBars(json);
+
+        }
+
+        function drawBars(data) {
+            var tooltip = d3.select("body")
+                .append("div")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+//                .text("a simple tooltip");
+
+            let svg = d3.select('#bar').append('svg')
+                .attr('width', width + 4 * 50 + 200)
+                .attr('height', height);
+            for (var i = 0; i < data.length; i++) {
+                let group = svg.append('g');
+                group.attr('class', 'rect')
+                    .selectAll('rect')
+                    .data(data[i]).enter()
+                    .append('rect')
+                    .attr('x', function (d) {
+                        return d.x
+                    })
+                    .attr('y', 10)
+                    .attr('width', function (d) {
+                        return d.width
+                    })
+                    .attr('height', 20)
+                    .attr('fill', function (d) {
+                        return d.color || color(d.key);
+                    })
+                    .attr('opacity', 0.6)
+                    .on("mouseover", function(){return tooltip.style("visibility", "visible");})
+                    .on("mousemove", function(d){return tooltip.style("top", (event.pageY+10)+"px").style("left",(event.pageX+10)+"px").text(()=>{
+                        return '诊断：'+d.key+ ' '+' 概率'+ d.value});})
+                    .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+
+//                    .on('click', function (d) {
+////                        console.log(d.key);
+//                        var dom = document.getElementsByClassName('click');
+//                        console.log(dom);
+//                        dom.value ='当前查看疾病为：' + d.key;
+//                        var  p = document.getElementsByClassName('hint');
+//                        p.innerHtml = d.key;
+//                    });
+            }
+        }
+    }());
+    function compute(x) {
+        var sum = 0.929096450005921; //计算得到,所有概率之和
+        return x/sum;
+    }
+
+    function random(n) {
+        function rColor(){
+            var color="#";
+            for(var i=0;i<6;i++){
+                color += (Math.random()*16 | 0).toString(16);
+            }
+            return color;
+        }
+
+        var colorArr = [];
+        for( var i=0;i<n;i++){
+            let tcolor = rColor();
+            if(colorArr.indexOf(tcolor) == -1 ){
+                colorArr.push(tcolor);
+            }
+        }
+//        console.log(colorArr);
+        return colorArr;
+
+    }
+</script>
+</body>
+</html>
