@@ -20,9 +20,10 @@
 <!--<p class="hint"></p>-->
 <!--<input id="click" value="点击选择疾病">-->
 <div class="tuli"></div>
-<div id="bar1">patient1</div>
-<div id="bar2">patient2</div>
-<div id="bar3">patient3</div>
+<br>
+<div id="bar1">patient1: risk1</div>
+<div id="bar2">patient2: risk2</div>
+<div id="bar3">patient3: risk3</div>
 <script src="d3.v4.min.js"></script>
 <script>
     !(function() {
@@ -37,6 +38,7 @@
             .range(random(66));
 
         var disease = [];
+        var dis = [];
         var count = 0;
 
         d3.csv("../data/data3.csv", cast,function (data) {
@@ -48,9 +50,63 @@
         });
         d3.csv("../data/data1.csv", cast, function (data) {
             patientMain(data, 'bar1');
-            console.log(count)
-            console.log(disease);
+//            console.log(count)
+//            console.log(disease);
+            tuli(dis,10);
         });
+
+        function tuli(data,n) {
+            console.log(data);
+            data.sort(function(a,b){
+                return a.pValue < b.pValue;//从大到小排列
+            });
+            console.log(data);
+            data.forEach((v,i)=>{
+                return v.key = i;
+            })
+//            console.log(data);
+            let svg = d3.select('.tuli').append('svg')
+                .attr('width', 1000)
+                .attr('height', 100);
+                let group = svg.append('g');
+                var showData = data.slice(0,n||data.length);
+                group.attr('class', 'rect')
+                    .selectAll('.rect')
+                    .data(showData).enter()
+//                    .append('g')
+                    .append('rect')
+                    .attr('x', function (d) {
+                        return d.key%3*300
+                    })
+                    .attr('y', function (d) {
+                        return Math.floor(d.key/3)*40
+                    })
+                    .attr('width', 50)
+                    .attr('height', 20)
+                    .attr('fill', function (d) {
+                        return color(d.disease);
+                    })
+            group.selectAll('.rect').data(showData).enter()
+                .append("text")
+                    .text(function (d) {
+                        if(d.disease.length>40){
+                            return d.disease.slice(0,40)+'...'
+                        }else {
+                            return d.disease;
+                        }
+                    })
+                    .attr('x', function (d) {
+                        return d.key%3*300+60
+                    })
+                    .attr('y', function (d) {
+                        return Math.floor(d.key/3)*40+10
+                    })
+                    .attr('fill','black')
+//                    .attr('text-anchor', 'middle')
+                    .style('font-size', '12px')
+                    .attr('dy', 8)
+
+        }
 
         function cast(d) {
             Object.keys(d).forEach(function (key) {
@@ -81,6 +137,14 @@
                     if (disease.indexOf(key) == -1) {
                         count++
                         disease.push(key);
+                        dis.push({
+                            'disease': key,
+                            'pValue': num[key],
+                            'key': count
+                        })
+                    }else {
+                        dis[disease.indexOf(key)].pValue = Math.max(dis[disease.indexOf(key)].pValue, num[key]);
+                        console.log(dis[disease.indexOf(key)].pValue, num[key]);
                     }
                     json[visit[key] - 1].push({'key': key, 'value': compute(num[key])});
                 }
