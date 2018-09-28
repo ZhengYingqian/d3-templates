@@ -19,7 +19,10 @@
 <body>
 <!--<p class="hint"></p>-->
 <!--<input id="click" value="点击选择疾病">-->
-<div id="bar"></div>
+<div class="tuli"></div>
+<div id="bar1">patient1</div>
+<div id="bar2">patient2</div>
+<div id="bar3">patient3</div>
 <script src="d3.v4.min.js"></script>
 <script>
     !(function() {
@@ -31,9 +34,23 @@
         var chartLayer = svg.append("g").classed("chartLayer", true)
 
         var color = d3.scaleOrdinal()
-            .range(random(33));
+            .range(random(66));
 
-        d3.csv("../data/data3.csv", cast, patientMain);
+        var disease = [];
+        var count = 0;
+
+        d3.csv("../data/data3.csv", cast,function (data) {
+            patientMain(data, 'bar3')
+            console.log(count);
+        });
+        d3.csv("../data/data2.csv", cast, function (data) {
+            patientMain(data, 'bar2')
+        });
+        d3.csv("../data/data1.csv", cast, function (data) {
+            patientMain(data, 'bar1');
+            console.log(count)
+            console.log(disease);
+        });
 
         function cast(d) {
             Object.keys(d).forEach(function (key) {
@@ -42,11 +59,10 @@
             return d
         }
 
-        function patientMain(data) {
+        function patientMain(data,id) {
             console.log(data);
             width = 1000;
-            height = 800;
-            var disease = [];
+            height = 50;
             var res = d3.nest()
                 .rollup(function (d) {
                     delete d[0].disease;
@@ -63,6 +79,7 @@
             for (var key in visit) {
                 if (num.hasOwnProperty(key)) {
                     if (disease.indexOf(key) == -1) {
+                        count++
                         disease.push(key);
                     }
                     json[visit[key] - 1].push({'key': key, 'value': compute(num[key])});
@@ -79,11 +96,11 @@
             })
             console.log(json);
 
-            drawBars(json);
+            drawBars(json,id);
 
         }
 
-        function drawBars(data) {
+        function drawBars(data,id) {
             var tooltip = d3.select("body")
                 .append("div")
                 .style("position", "absolute")
@@ -91,7 +108,7 @@
                 .style("visibility", "hidden")
 //                .text("a simple tooltip");
 
-            let svg = d3.select('#bar').append('svg')
+            let svg = d3.select('#'+ id).append('svg')
                 .attr('width', width + 4 * 50 + 200)
                 .attr('height', height);
             for (var i = 0; i < data.length; i++) {
@@ -116,15 +133,6 @@
                     .on("mousemove", function(d){return tooltip.style("top", (event.pageY+10)+"px").style("left",(event.pageX+10)+"px").text(()=>{
                         return '诊断：'+d.key+ ' '+' 概率'+ d.value});})
                     .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
-
-//                    .on('click', function (d) {
-////                        console.log(d.key);
-//                        var dom = document.getElementsByClassName('click');
-//                        console.log(dom);
-//                        dom.value ='当前查看疾病为：' + d.key;
-//                        var  p = document.getElementsByClassName('hint');
-//                        p.innerHtml = d.key;
-//                    });
             }
         }
     }());
