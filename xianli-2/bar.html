@@ -41,30 +41,38 @@
         var dis = [];
         var count = 0;
 
-        d3.csv("../data/data3.csv", cast,function (data) {
-            patientMain(data, 'bar3')
-            console.log(count);
-        });
-        d3.csv("../data/data2.csv", cast, function (data) {
-            patientMain(data, 'bar2')
-        });
-        d3.csv("../data/data1.csv", cast, function (data) {
-            patientMain(data, 'bar1');
+        //读取数据，并绘图
+        d3.csv("../data/data3.csv", cast,function (data3) {
+            //patient3 的bar
+            patientMain(data3, 'bar3');
+            d3.csv("../data/data2.csv", cast, function (data2) {
+                //patient2 的bar
+                patientMain(data2, 'bar2')
+                d3.csv("../data/data1.csv", cast, function (data1) {
+                    ////patient1 的bar
+                    patientMain(data1, 'bar1');
 //            console.log(count)
 //            console.log(disease);
-            tuli(dis,10);
+                    tuli(dis,10);
+                });
+            });
         });
 
+        //图例部分
         function tuli(data,n) {
-            console.log(data);
+//            console.log(data);
+            //对数组进行排序
             data.sort(function(a,b){
                 return a.pValue < b.pValue;//从大到小排列
             });
-            console.log(data);
+//            console.log(data);
+            //更新数据index
             data.forEach((v,i)=>{
                 return v.key = i;
             })
 //            console.log(data);
+
+            //绑定矩形
             let svg = d3.select('.tuli').append('svg')
                 .attr('width', 1000)
                 .attr('height', 100);
@@ -73,7 +81,6 @@
                 group.attr('class', 'rect')
                     .selectAll('.rect')
                     .data(showData).enter()
-//                    .append('g')
                     .append('rect')
                     .attr('x', function (d) {
                         return d.key%3*300
@@ -86,13 +93,16 @@
                     .attr('fill', function (d) {
                         return color(d.disease);
                     })
+                    .attr('opacity',0.6)
+            //绑定文字
             group.selectAll('.rect').data(showData).enter()
                 .append("text")
                     .text(function (d) {
+                        var txt = d.disease;
                         if(d.disease.length>40){
-                            return d.disease.slice(0,40)+'...'
+                            return d.disease.slice(0,40)+'... : ' + d.pValue.toFixed(4);
                         }else {
-                            return d.disease;
+                            return d.disease+ ' : ' + d.pValue.toFixed(4);
                         }
                     })
                     .attr('x', function (d) {
@@ -115,10 +125,13 @@
             return d
         }
 
+        //单个barChart
         function patientMain(data,id) {
-            console.log(data);
+//            console.log(data);
             width = 1000;
             height = 50;
+
+            //对csv数据进行处理
             var res = d3.nest()
                 .rollup(function (d) {
                     delete d[0].disease;
@@ -136,41 +149,46 @@
                 if (num.hasOwnProperty(key)) {
                     if (disease.indexOf(key) == -1) {
                         count++
+                        //所有疾病
                         disease.push(key);
+                        //所有疾病的名字和概率
                         dis.push({
                             'disease': key,
                             'pValue': num[key],
                             'key': count
                         })
                     }else {
+                        //更新概率，取不同病人的最高概率
                         dis[disease.indexOf(key)].pValue = Math.max(dis[disease.indexOf(key)].pValue, num[key]);
-                        console.log(dis[disease.indexOf(key)].pValue, num[key]);
+//                        console.log(dis[disease.indexOf(key)].pValue, num[key]);
                     }
                     json[visit[key] - 1].push({'key': key, 'value': compute(num[key])});
                 }
             }
+            //添加X位置和单个矩形宽度
             json.forEach((d, i) => {
                 for (var j = 0; j < d.length; j++) {
                     d[j].width = compute(d[j].value) * width;
                     d[j].x = x;
                     x += d[j].width;
                 }
+                //添加visit之间的间隔
                 d.push({'key': 'visit' + i, 'value': -1, 'x': x, 'width': 20, 'color': 'white'});
                 x += 20;
             })
-            console.log(json);
+//            console.log(json);
 
             drawBars(json,id);
 
         }
 
         function drawBars(data,id) {
+            //鼠标移动响应tooltip
             var tooltip = d3.select("body")
                 .append("div")
                 .style("position", "absolute")
                 .style("z-index", "10")
                 .style("visibility", "hidden")
-//                .text("a simple tooltip");
 
             let svg = d3.select('#'+ id).append('svg')
                 .attr('width', width + 4 * 50 + 200)
