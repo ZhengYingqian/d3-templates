@@ -23,7 +23,7 @@
 <br>
 <div id="bar1" style="float: left"></div> <div style="float: left; margin-left: -390px; margin-top: 10px"><label>patient2: risk2</label></div>
 <div id="bar2" style="float: left;"></div> <div style="float: left; margin-left: -320px; margin-top: 10px"><label>patient2: risk2</label></div>
-<div id="bar3" style="float: left;"></div><div style="float: left; margin-left: -378px; margin-top: 10px"><label>patient2: risk2</label></div>
+<div id="bar3" style="float: left;"></div><div style="float: left; margin-left: -426px; margin-top: 10px"><label>patient2: risk2</label></div>
 <script src="d3.v4.min.js"></script>
 <script>
     !(function() {
@@ -53,7 +53,7 @@
                     patientMain(data1, 'bar1');
 //            console.log(count)
 //            console.log(disease);
-                    tuli(dis,9);
+                    tuli(dis,6);
                 });
             });
         });
@@ -88,16 +88,15 @@
                 .attr('height', 100);
             let group = svg.append('g');
             var showData = data.slice(0,n||data.length);
-            print(showData)
             group.attr('class', 'rect')
                 .selectAll('.rect')
                 .data(showData).enter()
                 .append('rect')
                 .attr('x', function (d) {
-                    return d.key%3*300
+                    return d.key%2*500
                 })
                 .attr('y', function (d) {
-                    return Math.floor(d.key/3)*40
+                    return Math.floor(d.key/2)*40
                 })
                 .attr('width', 30)
                 .attr('height', 20)
@@ -105,6 +104,7 @@
                     return color(d.disease);
                 })
                 .attr('opacity',0.9)
+
             //绑定文字
             group.selectAll('.rect').data(showData).enter()
                 .append("text")
@@ -118,10 +118,10 @@
                     }
                 })
                 .attr('x', function (d) {
-                    return d.key%3*300+35
+                    return d.key%2*500+35
                 })
                 .attr('y', function (d) {
-                    return Math.floor(d.key/3)*40+6
+                    return Math.floor(d.key/2)*40+6
                 })
                 .attr('fill','black')
                 //                    .attr('text-anchor', 'middle')
@@ -144,7 +144,7 @@
             if(id == 'bar2')
                 width = 941;
             if(id == 'bar3')
-                width = 1000;
+                width = 1047;
 
             height = 50;
             //对csv数据进行处理
